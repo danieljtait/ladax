@@ -28,3 +28,26 @@ class SchurComplementKernel(Kernel):
         return (k12
                 - k1z @ jscipy.linalg.cho_solve(
                     (self.divisor_matrix_cholesky, True), kz2))
+
+
+@struct.dataclass
+class VariationalKernel(Kernel):
+    fixed_inputs: jnp.ndarray
+    variational_scale: jnp.ndarray
+    jitter: float = 1.0e-4
+
+    def apply(self, x1, x2):
+        z = self.fixed_inputs
+        kxy = self.kernel_fn(x1, x2)
+        kxz = self.kernel_fn(x1, z)
+        kzy = self.kernel_fn(z, x2)
+        kzz = self.kernel_fn(z, z)
+        kzz_cholesky = jnp.linalg.cholesky(
+            kzz + self.jitter * jnp.eye(z.shape[-2]))
+
+        kzz_chol_qu_scale = jscipy.linalg.cho_solve(
+            (kzz_cholesky, True), self.variational_scale)
+
+        return (kxy
+                - kxz @ jscipy.linalg.cho_solve((kzz_cholesky, True), kzy)
+                + kxz @ (kzz_chol_qu_scale @ kzz_chol_qu_scale.T) @ kzy)

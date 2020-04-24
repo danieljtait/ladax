@@ -6,9 +6,9 @@
       <change beforePath="$PROJECT_DIR$/ladax/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ladax/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ladax/gaussian_processes/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ladax/gaussian_processes/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ladax/gaussian_processes/gaussian_processes.py" beforeDir="false" afterPath="$PROJECT_DIR$/ladax/gaussian_processes/gaussian_processes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ladax/gaussian_processes/inducing_variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/ladax/gaussian_processes/inducing_variables.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ladax/kernels/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ladax/kernels/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ladax/kernels/kernels.py" beforeDir="false" afterPath="$PROJECT_DIR$/ladax/kernels/kernels.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +49,7 @@
       <option name="presentableId" value="Default" />
       <updated>1587746628598</updated>
       <workItem from="1587746646862" duration="1442000" />
-      <workItem from="1587748173741" duration="5426000" />
+      <workItem from="1587748173741" duration="6041000" />
     </task>
     <servers />
   </component>

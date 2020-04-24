@@ -83,8 +83,7 @@ class InducingPointsProvider(nn.Module):
                 jitter).marginal()
 
         return InducingPointsVariable(
-            variational_distribution=MultivariateNormalTriL(
-                qu_mean, jnp.tril(qu_scale)),
+            variational_distribution=MultivariateNormalTriL(qu_mean, jnp.tril(qu_scale)),
             prior_distribution=prior,
             locations=z,
             whiten=whiten)
