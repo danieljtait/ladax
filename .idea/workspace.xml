@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a83ef353-fcb1-4ba9-8cf5-6da9e20d39e8" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/ladax.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/basic_gp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/basic_svgp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/distributions/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/distributions/multivariate_normal.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/gaussian_processes/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/gaussian_processes/gaussian_process_layers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/gaussian_processes/gaussian_processes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/gaussian_processes/inducing_variables.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/kernels/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/kernels/kernel_layers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/kernels/kernels.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/likelihoods/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/likelihoods/gaussian_log_likelihood.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ladax/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IgnoredFileRootStore">
+    <option name="generatedRoots">
+      <set>
+        <option value="$PROJECT_DIR$/.idea" />
+      </set>
+    </option>
+  </component>
+  <component name="JupyterTrust" id="3904341c-35e5-468e-96a6-6dc6af61ed67" />
+  <component name="ProjectId" id="1azm7PCaXEFyZ6MYY0NdJLddZ7o" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a83ef353-fcb1-4ba9-8cf5-6da9e20d39e8" name="Default Changelist" comment="" />
+      <created>1587746628598</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1587746628598</updated>
+      <workItem from="1587746646862" duration="1442000" />
+      <workItem from="1587748173741" duration="6183000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+</project>
