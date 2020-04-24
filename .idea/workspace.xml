@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a83ef353-fcb1-4ba9-8cf5-6da9e20d39e8" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ladax/gaussian_processes/gaussian_processes.py" beforeDir="false" afterPath="$PROJECT_DIR$/ladax/gaussian_processes/gaussian_processes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +43,7 @@
       <option name="presentableId" value="Default" />
       <updated>1587746628598</updated>
       <workItem from="1587746646862" duration="1442000" />
-      <workItem from="1587748173741" duration="1337000" />
+      <workItem from="1587748173741" duration="2076000" />
     </task>
     <servers />
   </component>

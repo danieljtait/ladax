@@ -139,3 +139,5 @@ cython_debug/
 
 # mac os stuff
 DS_Store
+
+.idea
