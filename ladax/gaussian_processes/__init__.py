@@ -5,4 +5,4 @@ from .inducing_variables import (InducingVariable,
                                  InducingPointsVariable,
                                  InducingPointsProvider)
 
-from .gaussian_process_layers import SVGPProvider
+from .gaussian_process_layers import SVGPLayer

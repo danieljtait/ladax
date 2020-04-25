@@ -7,7 +7,7 @@ from ladax import kernels, utils
 from .gaussian_processes import VariationalGaussianProcess
 
 
-class SVGPProvider(nn.Module):
+class SVGPLayer(nn.Module):
     def apply(self,
               index_points,
               mean_fn,

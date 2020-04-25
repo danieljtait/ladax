@@ -77,11 +77,11 @@ class SVGPModel(nn.Module):
             inducing_locations_init=inducing_locations_init,
             name='inducing_var')
 
-        vgp = gaussian_processes.SVGPProvider(x,
-                                              lambda x_: jnp.zeros(x_.shape[:-1]),
-                                              kern_fun,
-                                              inducing_var,
-                                              name='vgp')
+        vgp = gaussian_processes.SVGPLayer(x,
+                                           lambda x_: jnp.zeros(x_.shape[:-1]),
+                                           kern_fun,
+                                           inducing_var,
+                                           name='vgp')
 
         ell = LikelihoodProvider(vgp, name='ell')
 
