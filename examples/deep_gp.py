@@ -237,9 +237,6 @@ def main(_):
         ax.plot(train_ds['index_points'][:, 0], train_ds['y'],
                 'ks', label='observations')
         ax.legend()
-
-        plt.savefig('./imgs/{}layer_deepgp'.format(FLAGS.num_layers), dpi=350)
-
         plt.show()
 
 
