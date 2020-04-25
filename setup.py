@@ -15,8 +15,8 @@ install_requires = [
   "jaxlib>=0.1.41",
   "jax>=0.1.59",
   "flax",
-  "matplotlib",  # only needed for tensorboard export
-  "dataclasses",  # will only install on py3.6
+  "matplotlib",
+  "dataclasses",
   "msgpack",
 ]
 
@@ -39,7 +39,7 @@ setup(
         ],
     keywords="",
     author="Dan Tait",
-    author_email="flax-dev@google.com",
+    author_email="tait.djk@gmail.com",
     url="https://github.com/danieljtait/ladax",
     license="Apache",
     packages=find_packages(),
