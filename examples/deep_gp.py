@@ -82,7 +82,8 @@ class DeepGPModel(nn.Module):
         mf = lambda x_: jnp.zeros(x_.shape[:-1])  # initial mean_fun
         for layer in range(1, FLAGS.num_layers+1):
             kf = kernels.RBFKernelProvider(
-                x, name='kernel_fn_{}'.format(layer),
+                x,
+                name='kernel_fn_{}'.format(layer),
                 **kwargs.get('kernel_fn_{}_kwargs'.format(layer), {}))
 
             inducing_var = inducing_variables.InducingPointsProvider(
@@ -236,6 +237,9 @@ def main(_):
         ax.plot(train_ds['index_points'][:, 0], train_ds['y'],
                 'ks', label='observations')
         ax.legend()
+
+        plt.savefig('./imgs/{}layer_deepgp'.format(FLAGS.num_layers), dpi=350)
+
         plt.show()
 
 
