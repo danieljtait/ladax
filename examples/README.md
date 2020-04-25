@@ -25,4 +25,4 @@ different numbers of layers run
 
 SVGP      | 2-Layer DeepGP
 :--------:|:----------------:
-![](./imgs/1layer_deepgp.png) |  [](./imgs/2layer_deepgp.png)
+![](./imgs/1layer_deepgp.png) |  ![](./imgs/2layer_deepgp.png)
