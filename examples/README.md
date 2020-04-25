@@ -10,7 +10,7 @@ $ python basic_gp.py
 ```
 
 For an example of fitting a variational Gaussian
-process run, and to plot the resulting fit
+process and to plot the resulting fit
 
 ```shell script
 $ python basic_svgp.py --plot=True
@@ -23,6 +23,6 @@ different numbers of layers run
 $ python basic_dgp.py --plot=True --num_layers=2
 ```
 
-SVGP      | 2-Layer DeepGP
+1-Layer "Deep"-GP      | 2-Layer Deep GP
 :--------:|:----------------:
 ![](./imgs/1layer_deepgp.png) |  ![](./imgs/2layer_deepgp.png)
