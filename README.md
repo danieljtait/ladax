@@ -5,10 +5,10 @@
 Small demonstration of using the FLAX package to create layers
 of distributions. Current demonstrations focus on using Gaussian 
 processes. Why? Because once the work is done in creating the
-basic `GaussianProcessLayers` etc. it becomes easy to use the
-FLAX functional API to begin nesting these models to easil 
-create Deep Gaussian process models, or slot GPs into other
-deep learning frameworks. 
+basic `GaussianProcessLayers` etc. we can use the FLAX functional
+layers API to
+1. Easily combine simpler GPs to create DeepGPs
+2. Easily slot GPs into other deep learning frameworks. 
 
 
 Briefly the design envisions three components
