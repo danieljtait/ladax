@@ -4,7 +4,12 @@
 
 Small demonstration of using the FLAX package to create layers
 of distributions. Current demonstrations focus on using Gaussian 
-processes. 
+processes. Why? Because once the work is done in creating the
+basic `GaussianProcessLayers` etc. it becomes easy to use the
+FLAX functional API to begin nesting these models to easil 
+create Deep Gaussian process models, or slot GPs into other
+deep learning frameworks. 
+
 
 Briefly the design envisions three components
 
@@ -15,9 +20,9 @@ node. This process is made convenient using the
 `struct.dataclass` decorator from FLAX. 
 
 #### 2. Distribution layers
-These are `flax.nn.Module` objects which accept 
-some input, and return an output in the form of a
-distribution.
+These are instances of a `flax.nn.Module` objects which 
+accept some input valid JAX type, and return an output 
+in the form of a distribution.
 
 #### 3. Providers
 Like the above, only without an input! An example is 

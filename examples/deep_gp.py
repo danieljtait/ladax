@@ -92,7 +92,7 @@ class DeepGPModel(nn.Module):
                 num_inducing_points=FLAGS.num_inducing_points,
                 **kwargs.get('inducing_var_{}_kwargs'.format(layer), {}))
 
-            vgp = gaussian_processes.SVGPProvider(
+            vgp = gaussian_processes.SVGPLayer(
                 x, mf, kf,
                 inducing_var,
                 name='vgp_{}'.format(layer))
