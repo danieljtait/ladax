@@ -31,3 +31,14 @@ a `struct` decorated container of the exponentiated
 quadratic kernel function. Because these components
 subclass `flax.nn.Module` they are a convenient place
 to handle initialisation and storage of parameters.
+
+The following code snippet violates the three definitions
+above (WIP!), but gives an idea
+```python 
+class SVGP(nn.Module):
+    def apply(self, x):
+        kernel_fn = kernel_provider(x, **kernel_fn_kwargs)
+        inducing_var = inducing_variable_provider(x, kernel_fn, **inducing_var_kwargs)
+        vgp = SVGPLayer(x, mean_fn, kernel_fn, inducing_var)
+        return vgp
+```
