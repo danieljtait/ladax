@@ -1,1 +1,1 @@
-from .svgp import SVGPLayer
+from .svgp import svgp_factory

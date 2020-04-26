@@ -9,7 +9,7 @@ def svgp_factory(kernel_provider,
                  kernel_fn_kwargs=None,
                  inducing_variable_kwargs=None):
 
-    mean_fn = mean_fn if mean_fn else lambda x: jnp.zeros(x.shape[-1], x.dtype)
+    mean_fn = mean_fn if mean_fn else lambda x: jnp.zeros(x.shape[-2], x.dtype)
     kernel_fn_kwargs = {} if kernel_fn_kwargs is None else kernel_fn_kwargs
     inducing_variable_kwargs = {} if inducing_variable_kwargs is None else inducing_variable_kwargs
 

@@ -43,11 +43,11 @@ class GaussianProcess:
             self.index_points,
             observation_noise_variance)
 
-        k_xnew_x = self.kernel_function(x_new, self.index_points)
         marginal = self.marginal()
 
         def cond_mean_fn(x):
-            return (self.mean_function(x_new)
+            k_xnew_x = self.kernel_function(x, self.index_points)
+            return (self.mean_function(x)
                     + k_xnew_x @ jscipy.linalg.cho_solve(
                         (cond_kernel_fn.divisor_matrix_cholesky, True),
                         y - marginal.mean))
