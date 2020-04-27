@@ -208,9 +208,9 @@ def main(_):
             ax.set_ylim((ymin, ymax))
 
         # animated plot
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(4, 4))
 
-        zcol = '#99ffff'
+        zcol = 'k'
 
         ax.plot(z[..., 0], z[..., 1], '-', color=zcol)
 
@@ -219,12 +219,7 @@ def main(_):
             line, = ax.plot([], [], 'D', color=zcol)
             lines.append(line)
 
-        ax.contourf(x,
-                    y,
-                    m.reshape(x.shape),
-                    alpha=0.85, vmin=vmin, vmax=vmax,
-                    levels=20,
-                    cmap='magma')
+        ax.contour(x, y, m.reshape(x.shape), 'k-', levels=10)
         ax.plot(*train_ds['index_points'].T, 'k+', label='obs. index points')
 
         # initialization function: plot the background of each frame
@@ -244,7 +239,7 @@ def main(_):
 
         nframes = (FLAGS.num_epochs + 1) // nskip
 
-        ax.plot([], [], 'C0D', label='inducing point locs.')
+        ax.plot([], [], 'D', color=zcol, label='inducing point locs.')
         ax.legend()
 
         anim = animation.FuncAnimation(fig, animate, init_func=init,
