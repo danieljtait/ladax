@@ -42,3 +42,17 @@ class SVGP(nn.Module):
         vgp = SVGPLayer(x, mean_fn, kernel_fn, inducing_var)
         return vgp
 ```
+
+## ToDo
+
+* Remove `likelihoods` and put this functionality into `losses`, and make the
+layer loss functions in `losses` import and parameterise the objects in
+`distributions`. 
+* Kernel algebra -- sums, products of kernels etc.
+* Apply kernel providers only to slices of index points
+* Examples of deep GPs with multiple GPs per layer, perhaps create an `IndependentGP`
+collection
+* More general multioutput GPs
+* Stop putting `index_points` through the kernel provider layers, just pass the number
+of features 
+* More losses -- Poisson etc. for count data
