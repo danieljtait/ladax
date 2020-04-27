@@ -111,8 +111,7 @@ def train_step(optimizer, batch):
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, z), grad = grad_fn(optimizer.target)
     optimizer = optimizer.apply_gradient(grad)
-    metrics = {'loss': loss,
-               'z': z}
+    metrics = {'loss': loss, 'z': z}
     return optimizer, metrics
 
 
@@ -121,9 +120,7 @@ def train_epoch(optimizer, train_ds, epoch):
     optimizer, epoch_metrics = train_step(optimizer, train_ds)
     epoch_metrics_np = jax.device_get(epoch_metrics)
 
-    logging.info('train epoch: %d, loss: %.4f',
-                 epoch,
-                 epoch_metrics_np['loss'])
+    logging.info('train epoch: %d, loss: %.4f', epoch, epoch_metrics_np['loss'])
 
     return optimizer, epoch_metrics_np
 
@@ -135,6 +132,7 @@ def train(train_ds):
     model = create_model(rng)
     loss = create_loss(rng, model, train_ds)
 
+    # we are going to collect the locations of the inducing points
     z = [model.params['1']['locations'], ]
 
     loss_and_model = LossAndModel(loss, model)
@@ -168,17 +166,11 @@ def main(_):
             obs_noise_scale**2,
             jitter=1e-4)
 
-        xmin = jnp.min(vgp.inducing_variable.locations[:, 0])
-        xmax = jnp.max(vgp.inducing_variable.locations[:, 0])
-        ymin = jnp.min(vgp.inducing_variable.locations[:, 1])
-        ymax = jnp.max(vgp.inducing_variable.locations[:, 1])
-
         xmin, xmax = (-3., 3.)
         ymin, ymax = (-3., 3.)
 
         xx = onp.linspace(xmin, xmax, 50)
-        yy = onp.linspace(ymin, ymax, 50)
-        x, y = onp.meshgrid(xx, yy)
+        x, y = onp.meshgrid(xx, xx)
         X = onp.column_stack((x.ravel(), y.ravel()))
         m = post_gp.mean_function(X)
 
@@ -186,7 +178,6 @@ def main(_):
 
         vmin = min(m.min(), true_y.min())
         vmax = max(m.max(), true_y.max())
-
         fig, axes = plt.subplots(ncols=2)
         axes[0].contourf(x, y, m.reshape(x.shape),
                          alpha=0.5, vmin=vmin, vmax=vmax)
@@ -228,7 +219,6 @@ def main(_):
 
         nskip = 10
         def animate(i):
-            #ax.set_title('Epoch {}'.format(i))
             for k in range(FLAGS.num_inducing_points):
                 x = [z[i*nskip, k, 0], ]
                 y = [z[i*nskip, k, 1], ]
