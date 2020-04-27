@@ -26,3 +26,9 @@ $ python basic_dgp.py --plot=True --num_layers=2
 1-Layer "Deep"-GP      | 2-Layer Deep GP
 :--------:|:----------------:
 ![](./imgs/1layer_deepgp.png) |  ![](./imgs/2layer_deepgp.png)
+
+## Inducing variables
+
+inducing points |
+:---------:|
+![](./notebooks/inducing_point_locs.gif) |
