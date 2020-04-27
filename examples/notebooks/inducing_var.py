@@ -52,9 +52,6 @@ LossAndModel = namedtuple('LossAndModel', 'loss model')
 
 def create_model(key):
 
-    def inducing_loc_init(key, shape):
-        return random.uniform(key, shape, minval=-1., maxval=1.)
-
     inducing_var_kwargs = {
         'num_inducing_points': FLAGS.num_inducing_points,
         'inducing_locations_init': jax.nn.initializers.normal(stddev=1.),
@@ -67,6 +64,7 @@ def create_model(key):
                                     inducing_variables.InducingPointsProvider,
                                     inducing_variable_kwargs=inducing_var_kwargs,
                                     svgp_layer_kwargs=svgp_layer_kwargs)
+
     vgp, params = clz.init_by_shape(
         key, [([FLAGS.num_training_points, 2], jnp.float32)], )
 

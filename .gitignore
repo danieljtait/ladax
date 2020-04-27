@@ -138,7 +138,7 @@ dmypy.json
 cython_debug/
 
 # mac os stuff
-DS_Store
+.DS_Store
 
 # IDE stuff
 .idea
