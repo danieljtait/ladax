@@ -29,6 +29,11 @@ $ python basic_dgp.py --plot=True --num_layers=2
 
 ## Inducing variables
 
-inducing points |
-:---------:|
+The sparse variational GP uses an additional set of 'pseudo'-index points,
+typically referred to as inducing points, to achieve increased computational
+efficiency. Specifying a `SVGP` model therefore requires the usual components
+for specifying a GP, along with a layer which provides the inducing variables. 
+
 ![](./notebooks/inducing_point_locs.gif) |
+:----------:|
+Trajectories of the inducing point locations during training |
