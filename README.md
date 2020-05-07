@@ -47,6 +47,9 @@ class SVGP(nn.Module):
         vgp = SVGPLayer(x, mean_fn, kernel_fn, inducing_var)
         return vgp
 ```
+in the above we have the following 
+* A `GP` is canonicalised by a `mean_fn` and `kernel_fn`, we abstract away the
+specification and parameterisation of these objects to another module.
 
 ## ToDo
 
