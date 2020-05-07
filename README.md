@@ -30,7 +30,12 @@ the `RBFKernelProvider` which returns a `Kernel`,
 a `struct` decorated container of the exponentiated 
 quadratic kernel function. Because these components
 subclass `flax.nn.Module` they are a convenient place
-to handle initialisation and storage of parameters.
+to handle initialisation and storage of parameters. 
+The motivation for this distinction is that it often
+easier to canonicalise the parameters of a distribution 
+returned by a layer, and outsource subtleties and
+variations of these parameterisations in a seperate
+module.
 
 The following code snippet violates the three definitions
 above (WIP!), but gives an idea
