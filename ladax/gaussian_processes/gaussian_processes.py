@@ -37,11 +37,8 @@ class GaussianProcess:
 
     def posterior_gp(self, y, x_new, observation_noise_variance, jitter=None):
         """ Returns a new GP conditional on y. """
-        cond_kernel_fn, _ = kernels.SchurComplementKernelProvider.init(
-            None,
-            self.kernel_function,
-            self.index_points,
-            observation_noise_variance)
+        cond_kernel_fn = kernels.SchurComplementKernelProvider(
+            self.index_points, observation_noise_variance).apply({}, self.kernel_function)
 
         marginal = self.marginal()
 
