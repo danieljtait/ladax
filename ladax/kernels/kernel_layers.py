@@ -3,7 +3,7 @@ import jax.numpy as jnp
 import jax
 from flax import linen as nn
 
-from .kernels import Kernel, SchurComplementKernel
+from ladax.kernels import Kernel, SchurComplementKernel
 from ladax import utils
 
 from jax.random import PRNGKey
@@ -24,8 +24,8 @@ class RBFKernelProvider(nn.Module):
     functionally defined kernels to be slotted into more complex models
     built using the Flax functional api.
     """
-    amplitude_init: Callable[[PRNGKey, Shape, Dtype], Array]
-    length_scale_init: Callable[[PRNGKey, Shape, Dtype], Array]
+    amplitude_init: Callable[[PRNGKey, Shape, Dtype], Array] = jax.nn.initializers.ones
+    length_scale_init: Callable[[PRNGKey, Shape, Dtype], Array] = jax.nn.initializers.ones
 
     @nn.compact
     def __call__(self, index_points: jnp.ndarray) -> Callable:
@@ -38,13 +38,12 @@ class RBFKernelProvider(nn.Module):
         """
         amplitude = jax.nn.softplus(
             self.param('amplitude',
-                       (1,),
-                       self.amplitude_init)) + jnp.finfo(float).tiny
+                       self.amplitude_init, (1,), )) + jnp.finfo(float).tiny
 
         length_scale = jax.nn.softplus(
             self.param('length_scale',
-                       (index_points.shape[-1],),
-                       self.length_scale_init)) + jnp.finfo(float).tiny
+                       self.length_scale_init, (index_points.shape[-1],),
+                       )) + jnp.finfo(float).tiny
 
         return Kernel(lambda x_, y_: rbf_kernel_fun(x_, y_, amplitude, length_scale))
 
