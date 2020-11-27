@@ -8,7 +8,7 @@ from absl import logging
 
 import jax
 import jax.numpy as jnp
-from flax import nn, optim
+from flax import linen as nn, optim
 from jax import random
 
 from ladax import kernels
@@ -16,6 +16,7 @@ from ladax.gaussian_processes import inducing_variables
 from ladax import gaussian_processes
 from ladax import likelihoods
 
+from typing import Callable
 
 FLAGS = flags.FLAGS
 
@@ -37,8 +38,8 @@ flags.DEFINE_bool(
 
 
 class LikelihoodProvider(nn.Module):
-    def apply(self,
-              vgp: gaussian_processes.VariationalGaussianProcess) -> likelihoods.GaussianLogLik:
+    @nn.compact
+    def __call__(self, vgp: gaussian_processes.VariationalGaussianProcess) -> likelihoods.GaussianLogLik:
         """
         Args:
             vgp: variational Gaussian process regression model q(f).
@@ -47,17 +48,17 @@ class LikelihoodProvider(nn.Module):
               compute ∫ log p(y|f) q(f) df
         """
         obs_noise_scale = jax.nn.softplus(
-            self.param('observation_noise_scale',
-                       (),
-                       jax.nn.initializers.ones))
+            self.param('observation_noise_scale', jax.nn.initializers.ones, ()))
         variational_distribution = vgp.marginal()
-        return likelihoods.GaussianLogLik(
-            variational_distribution.mean,
-            variational_distribution.scale, obs_noise_scale)
+        return likelihoods.GaussianLogLik(variational_distribution.mean,
+                                          variational_distribution.scale, obs_noise_scale)
 
 
 class SVGPModel(nn.Module):
-    def apply(self, x, inducing_locations_init, **kwargs):
+    inducing_locations_init: Callable
+
+    @nn.compact
+    def __call__(self, x, inducing_locations_init, **kwargs):
         """
         Args:
             x: the nd-array of index points of the GP model
@@ -68,22 +69,20 @@ class SVGPModel(nn.Module):
             vgp: the variational GP q(f) = ∫p(f|u)q(u)du where
               `q(u) == inducing_var.variational_distribution`.
         """
-        kern_fun = kernels.RBFKernelProvider(
-            x, name='kernel_fun', **kwargs.get('kernel_fun_kwargs', {}))
+        kern_fn = kernels.RBFKernelProvider(**kwargs.get('kernel_fn_kwargs', {}), name='kernel_fn')(x)
+
         inducing_var = inducing_variables.InducingPointsProvider(
-            x,
-            kern_fun,
+            kern_fn,
             num_inducing_points=5,
-            inducing_locations_init=inducing_locations_init,
-            name='inducing_var')
+            inducing_locations_init=self.inducing_locations_init,
+            name='inducing_var')(x)
 
-        vgp = gaussian_processes.SVGPLayer(x,
-                                           lambda x_: jnp.zeros(x_.shape[:-1]),
-                                           kern_fun,
+        vgp = gaussian_processes.SVGPLayer(lambda x_: jnp.zeros(x_.shape[:-1]),
+                                           kern_fn,
                                            inducing_var,
-                                           name='vgp')
+                                           name='vgp')(x)
 
-        ell = LikelihoodProvider(vgp, name='ell')
+        ell = LikelihoodProvider(name='ell')(vgp)
 
         return ell, vgp
 

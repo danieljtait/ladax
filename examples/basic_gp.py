@@ -6,13 +6,11 @@ from absl import logging
 
 import jax
 from jax import random
-from jax.tree_util import tree_flatten, tree_unflatten
 import jax.numpy as jnp
 
 from typing import Callable, Tuple, Dict, Union
 from flax import linen as nn
 from flax import optim
-import scipy as oscipy
 
 from ladax import kernels, distributions, gaussian_processes, utils
 
