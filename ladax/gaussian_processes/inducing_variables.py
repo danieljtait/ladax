@@ -24,9 +24,9 @@ class InducingPointsProvider(nn.Module):
     kernel_fn: Callable
     num_inducing_points: int
     inducing_locations_init: Union[Callable, None] = None
-    fixed_locations: bool = False,
-    whiten: bool = False,
-    jitter: float = 1e-4,
+    fixed_locations: bool = False
+    whiten: bool = False
+    jitter: float = 1e-4
     dtype: jnp.dtype = jnp.float64
 
     @nn.compact
