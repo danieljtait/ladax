@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 import jax.scipy as jscipy
-from flax import struct, nn
+from flax import struct
 
 from typing import Any, Callable
 from ladax import distributions, kernels, utils
