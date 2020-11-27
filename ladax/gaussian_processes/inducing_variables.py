@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jnp
-from flax import struct, nn
+from flax import struct, linen as nn
 from jax import random
 from ladax.distributions import MultivariateNormalDiag, MultivariateNormalTriL
 from ladax.gaussian_processes import GaussianProcess
@@ -21,69 +21,58 @@ class InducingPointsVariable(InducingVariable):
 
 class InducingPointsProvider(nn.Module):
     """ Handles parameterisation of an inducing points variable. """
+    kernel_fn: Callable
+    num_inducing_points: int
+    inducing_locations_init: Union[Callable, None] = None
+    fixed_locations: bool = False,
+    whiten: bool = False,
+    jitter: float = 1e-4,
+    dtype: jnp.dtype = jnp.float64
 
-    def apply(self,
-              index_points: jnp.ndarray,
-              kernel_fun: Callable,
-              num_inducing_points: int,
-              inducing_locations_init: Union[Callable, None] = None,
-              fixed_locations: bool = False,
-              whiten: bool = False,
-              jitter: float = 1e-4,
-              dtype: jnp.dtype = jnp.float64) -> InducingPointsVariable:
+    @nn.compact
+    def __call__(self, index_points: jnp.ndarray) -> InducingPointsVariable:
         """
         Args:
             index_points: the nd-array of index points of the GP model.
-            kernel_fun: callable kernel function.
-            num_inducing_points: total number of inducing points.
-            inducing_locations_init: initializer function for the inducing
-              variable locations.
-            fixed_locations: boolean specifying whether to optimise the inducing
-              point locations (default True).
-            whiten: boolean specifying whether to apply the whitening transformation.
-              (default False)
-            jitter: float `jitter` term to add to the diagonal of the covariance
-              function of the GP prior of the inducing variable, only used if no
-              whitening transform applied.
-            dtype: the data-type of the computation (default: float64)
         Returns:
             inducing_var: inducing variables `inducing_variables.InducingPointsVariable`
         """
         n_features = index_points.shape[-1]
-        z_shape = (num_inducing_points, n_features)
-        if inducing_locations_init is None:
+        z_shape = (self.num_inducing_points, n_features)
+        if self.inducing_locations_init is None:
             inducing_locations_init = lambda key, shape: random.normal(key, z_shape)
+        else:
+            inducing_locations_init = self.inducing_locations_init
 
-        if fixed_locations:
+        if self.fixed_locations:
             _default_key = random.PRNGKey(0)
             z = inducing_locations_init(_default_key, z_shape)
         else:
             z = self.param('locations',
-                           (num_inducing_points, n_features),
-                           inducing_locations_init)
+                           inducing_locations_init,
+                           (self.num_inducing_points, n_features), )
 
-        qu_mean = self.param('mean', (num_inducing_points,),
+        qu_mean = self.param('mean',
                              lambda key, shape: jax.nn.initializers.zeros(
-                                 key, z_shape[0], dtype=dtype))
+                                 key, z_shape[0], dtype=self.dtype),
+                             (self.num_inducing_points, ))
 
         qu_scale = self.param(
             'scale',
-            (num_inducing_points, num_inducing_points),
-            lambda key, shape: jnp.eye(num_inducing_points, dtype=dtype))
+            lambda key, shape: jnp.eye(self.num_inducing_points, dtype=self.dtype),
+            (self.num_inducing_points, self.num_inducing_points))
 
-        if whiten:
+        if self.whiten:
             prior = MultivariateNormalDiag(mean=jnp.zeros(index_points.shape[-1]),
                                            scale_diag=jnp.ones(index_points.shape[-2]))
 
         else:
-            prior = GaussianProcess(
-                z,
-                lambda x_: jnp.zeros(x_.shape[:-1]),
-                kernel_fun,
-                jitter).marginal()
+            prior = GaussianProcess(z,
+                                    lambda x_: jnp.zeros(x_.shape[:-1]),
+                                    self.kernel_fn,
+                                    self.jitter).marginal()
 
-        return InducingPointsVariable(
-            variational_distribution=MultivariateNormalTriL(qu_mean, jnp.tril(qu_scale)),
-            prior_distribution=prior,
-            locations=z,
-            whiten=whiten)
+        return InducingPointsVariable(variational_distribution=MultivariateNormalTriL(qu_mean, jnp.tril(qu_scale)),
+                                      prior_distribution=prior,
+                                      locations=z,
+                                      whiten=self.whiten)
