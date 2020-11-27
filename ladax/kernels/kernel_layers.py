@@ -35,8 +35,6 @@ class RBFKernelProvider(nn.Module):
         Args:
             index_points: The nd-array of index points to the kernel. Only used for
               feature shape finding.
-            amplitude_init: initializer function for the amplitude parameter.
-            length_scale_init: initializer function for the length-scale parameter.
         Returns:
             rbf_kernel_fun: Callable kernel function.
         """
@@ -63,8 +61,6 @@ class SchurComplementKernelProvider(nn.Module):
         """
         Args:
             kernel_fun:
-            fixed_index_points:
-            diag_shift: Python `float`
         Returns:
         """
         # compute the "divisor-matrix"
