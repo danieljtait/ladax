@@ -7,9 +7,7 @@ from .kernels import Kernel, SchurComplementKernel
 from ladax import utils
 
 from jax.random import PRNGKey
-from jax.numpy import ndarray as Array
-from jax.numpy import dtype as Dtype
-from jax.numpy import shape as Shape
+from jax.numpy import ndarray as Array, dtype as Dtype, shape as Shape
 
 
 def rbf_kernel_fun(x, x2, amplitude, lengthscale):
