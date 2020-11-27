@@ -36,6 +36,10 @@ flags.DEFINE_bool(
     'plot', default=False,
     help=('Plot the results.',))
 
+flags.DEFINE_integer(
+    'n_index_points', default=25,
+    help=('Number of index points to generate. ', ))
+
 
 class LikelihoodProvider(nn.Module):
     @nn.compact
@@ -106,6 +110,12 @@ def create_model(key, input_shape):
     return nn.Model(SVGPModel, params)
 
 
+def get_initial_params(key, inducing_locations_init):
+    init_batch = jnp.ones((FLAGS.n_index_points, 1))
+    initial_variables = SVGPModel(inducing_locations_init).init(key, init_batch)
+    return initial_variables["params"]
+
+
 def create_optimizer(model, learning_rate, beta):
     optimizer_def = optim.Momentum(learning_rate=learning_rate, beta=beta)
     optimizer = optimizer_def.create(model)
@@ -115,13 +125,10 @@ def create_optimizer(model, learning_rate, beta):
 @jax.jit
 def train_step(optimizer, batch):
     """Train for a single step."""
-    def inducing_loc_init(key, shape):
-        return random.uniform(key, shape, minval=-3., maxval=3.)
 
-    def loss_fn(model):
-        ell, vgp = model(batch['index_points'], inducing_loc_init)
-        return (-ell.variational_expectation(batch['y'])
-                + vgp.prior_kl())
+    def loss_fn(params):
+        ell, vgp = SVGPModel({'params': params}, batch['index_points'])
+        return -ell.variational_expectation(batch['y']) + vgp.prior_kl()
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=False)
     loss, grad = grad_fn(optimizer.target)
@@ -143,18 +150,28 @@ def train_epoch(optimizer, train_ds, epoch):
 
 
 def train(train_ds):
+    """ Complete training of the SVGP-Model.
+    Args:
+        train_ds: Python `dict` with entries `index_points` and `y`.
+    Returns:
+        trained_params: The parameters of the trained model.
+    """
     rng = random.PRNGKey(0)
 
-    num_epochs = FLAGS.num_epochs
+    # initalise the model parameters
+    params = get_initial_params(rng)
 
-    model = create_model(rng, (15, 1))
-    optimizer = create_optimizer(model, FLAGS.learning_rate, FLAGS.momentum)
+    # initializer for the inducing variables
+    def inducing_loc_init(key, shape):
+        return random.uniform(key, shape, minval=-3., maxval=3.)
 
-    for epoch in range(1, num_epochs + 1):
-        optimizer, metrics = train_epoch(
-            optimizer, train_ds, epoch)
+    # get the optimizer
+    optimizer = create_optimizer(params, inducing_loc_init)
 
-    return optimizer
+    for epoch in range(1, FLAGS.num_epochs + 1):
+        optimizer, metrics = train_epoch(optimizer, train_ds, epoch)
+
+    return optimizer.target
 
 
 def main(_):
