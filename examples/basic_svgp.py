@@ -79,6 +79,7 @@ class SVGPModel(nn.Module):
             kern_fn,
             num_inducing_points=5,
             inducing_locations_init=self.inducing_locations_init,
+            whiten=True,
             name='inducing_var')(x)
 
         vgp = gaussian_processes.SVGPLayer(lambda x_: jnp.zeros(x_.shape[:-1]),
