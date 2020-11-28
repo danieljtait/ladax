@@ -37,7 +37,7 @@ flags.DEFINE_bool(
     help=('Plot the results.',))
 
 flags.DEFINE_integer(
-    'n_index_points', default=25,
+    'n_index_points', default=10,
     help=('Number of index points to generate. ', ))
 
 
@@ -59,10 +59,10 @@ class LikelihoodProvider(nn.Module):
 
 
 class SVGPModel(nn.Module):
-    inducing_locations_init: Callable
+    inducing_locations_init: Callable = jax.nn.initializers.ones
 
     @nn.compact
-    def __call__(self, x, inducing_locations_init, **kwargs):
+    def __call__(self, x, **kwargs):
         """
         Args:
             x: the nd-array of index points of the GP model
@@ -116,9 +116,9 @@ def get_initial_params(key, inducing_locations_init):
     return initial_variables["params"]
 
 
-def create_optimizer(model, learning_rate, beta):
-    optimizer_def = optim.Momentum(learning_rate=learning_rate, beta=beta)
-    optimizer = optimizer_def.create(model)
+def create_optimizer(params, learning_rate, beta):
+    optimizer_def = optim.Momentum(learning_rate=learning_rate) #, beta=beta)
+    optimizer = optimizer_def.create(params)
     return optimizer
 
 
@@ -127,7 +127,7 @@ def train_step(optimizer, batch):
     """Train for a single step."""
 
     def loss_fn(params):
-        ell, vgp = SVGPModel({'params': params}, batch['index_points'])
+        ell, vgp = SVGPModel().apply({'params': params}, batch['index_points'])
         return -ell.variational_expectation(batch['y']) + vgp.prior_kl()
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=False)
@@ -158,15 +158,15 @@ def train(train_ds):
     """
     rng = random.PRNGKey(0)
 
-    # initalise the model parameters
-    params = get_initial_params(rng)
-
-    # initializer for the inducing variables
+    # Define initializer for the inducing variables
     def inducing_loc_init(key, shape):
         return random.uniform(key, shape, minval=-3., maxval=3.)
 
+    # initalise the model parameters
+    params = get_initial_params(rng, inducing_loc_init)
+
     # get the optimizer
-    optimizer = create_optimizer(params, inducing_loc_init)
+    optimizer = create_optimizer(params, FLAGS.learning_rate, FLAGS.momentum)
 
     for epoch in range(1, FLAGS.num_epochs + 1):
         optimizer, metrics = train_epoch(optimizer, train_ds, epoch)
@@ -177,28 +177,24 @@ def train(train_ds):
 def main(_):
     jnp.set_printoptions(precision=3, suppress=True)
 
-    shape = (15, 1)
+    shape = (FLAGS.n_index_points, 1)
     index_points = jnp.linspace(-3., 3., shape[0])[:, None]
 
     rng = random.PRNGKey(123)
 
     y = (jnp.sin(index_points)[:, 0]
-         + 0.33 * random.normal(rng, (15,)))
+         + 0.33 * random.normal(rng, (FLAGS.n_index_points,)))
 
     train_ds = {'index_points': index_points, 'y': y}
 
-    optimizer = train(train_ds)
+    trained_params = train(train_ds)
 
     if FLAGS.plot:
         import matplotlib.pyplot as plt
-        model = optimizer.target
-
-        def inducing_loc_init(key, shape):
-            return random.uniform(key, shape, minval=-3., maxval=3.)
 
         xx_pred = jnp.linspace(-3., 5.)[:, None]
 
-        _, vgp = model(xx_pred, inducing_loc_init)
+        _, vgp = SVGPModel().apply({'params': trained_params}, xx_pred)
 
         pred_m = vgp.mean_function(xx_pred)
         pred_v = jnp.diag(vgp.kernel_function(xx_pred, xx_pred))
@@ -211,8 +207,10 @@ def main(_):
             pred_m + 2 * jnp.sqrt(pred_v), alpha=0.5)
         ax.plot(xx_pred[:, 0], pred_m, '-',
                 label=r'$\mathbb{E}_{f \sim q(f)}[f(x)]$')
-        ax.plot(model.params['inducing_var']['locations'][:, 0],
-                model.params['inducing_var']['mean'], '+',
+        ax.plot(trained_params['inducing_var']['locations'][:, 0],
+                trained_params['inducing_var']['mean'], 'X',
+                markeredgecolor='k',
+                markersize=12,
                 label=r'$E_{u \sim q(u)}[u]$')
         ax.plot(train_ds['index_points'][:, 0], train_ds['y'], 'ks', label='observations')
         ax.legend()
