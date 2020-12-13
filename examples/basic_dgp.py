@@ -6,7 +6,7 @@ from absl import logging
 
 import jax
 import jax.numpy as jnp
-from flax import nn, optim
+from flax import linen as nn, optim
 from jax import random
 
 from ladax import kernels
@@ -48,10 +48,14 @@ flags.DEFINE_integer(
     'num_layers', default=2,
     help=('Number of layers for the deep GP model.', ))
 
+flags.DEFINE_integer(
+    'n_index_points', default=10,
+    help=('Number of index points to generate. ', ))
+
 
 class LikelihoodProvider(nn.Module):
-    def apply(self,
-              x: jnp.ndarray) -> distributions.MultivariateNormalDiag:
+    @nn.compact
+    def __call__(self, x: jnp.ndarray) -> distributions.MultivariateNormalDiag:
         """
         Args:
             x: nd-array
@@ -60,18 +64,47 @@ class LikelihoodProvider(nn.Module):
         """
         obs_noise_scale = jax.nn.softplus(
             self.param('observation_noise_scale',
-                       (1, ),
-                       lambda key, shape: 1.0e-1*jnp.ones([1])))
-        return distributions.MultivariateNormalDiag(
-            mean=x[..., 0], scale_diag=jnp.ones(x.shape[:-1])*obs_noise_scale)
+                       jax.nn.initializers.ones,
+                       (1, )))
+        return distributions.MultivariateNormalDiag(mean=x[..., 0],
+                                                    scale_diag=jnp.ones(x.shape[:-1])*obs_noise_scale)
 
 
 class DeepGPModel(nn.Module):
-    def apply(self, x, sample_key, **kwargs):
+
+    def setup(self, **kwargs):
+        self.kernel_fns = {}
+        self.inducing_vars = {}
+        self.vgp_layers = {}
+
+        mf = lambda x_: jnp.zeros(x_.shape[:-1])  # initial mean_fun
+
+        for layer in range(1, FLAGS.num_layers+1):
+
+            kf = kernels.RBFKernelProvider(**kwargs.get('kernel_fn_{}_kwargs'.format(layer), {}),
+                                           name='kernel_fn')
+
+            inducing_var = inducing_variables.InducingPointsProvider(
+                kf,
+                num_inducing_points=FLAGS.num_inducing_points,
+                name='inducing_var',
+                **kwargs.get('inducing_var_{}_kwargs'.format(layer), {}))
+
+            vgp = gaussian_processes.SVGPLayer(
+                mf, kf,
+                inducing_var,
+                name='vgp_{}'.format(layer))
+
+            self.kernel_fns[layer] = kf
+            self.inducing_vars[layer] = inducing_var
+            self.vgp_layers[layer] = vgp
+
+            mf = lambda x_: x_[..., 0]  # identity mean_fn for later layers.
+
+    def __call__(self, x, **kwargs):
         """
         Args:
             x: nd-array input index points for the Deep GP model.
-            sample_key: random number generator for stochastic inference.
             **kwargs: additional kwargs passed to layers.
         Returns:
             loglik: The output observation model.
@@ -80,38 +113,53 @@ class DeepGPModel(nn.Module):
         vgps = {}
 
         mf = lambda x_: jnp.zeros(x_.shape[:-1])  # initial mean_fun
+
+        rng = self.make_rng('layer_sampling_rng')
+
         for layer in range(1, FLAGS.num_layers+1):
-            kf = kernels.RBFKernelProvider(
-                x,
-                name='kernel_fn_{}'.format(layer),
-                **kwargs.get('kernel_fn_{}_kwargs'.format(layer), {}))
 
-            inducing_var = inducing_variables.InducingPointsProvider(
-                x,
-                kf,
-                name='inducing_var_{}'.format(layer),
-                num_inducing_points=FLAGS.num_inducing_points,
-                **kwargs.get('inducing_var_{}_kwargs'.format(layer), {}))
+            kf = self.kernel_fns[layer](x)
+            inducing_var = self.inducing_vars[layer](x)
+            vgp = self.vgp_layers[layer](x)
 
-            vgp = gaussian_processes.SVGPLayer(
-                x, mf, kf,
-                inducing_var,
-                name='vgp_{}'.format(layer))
-
-            x = vgp.marginal().sample(sample_key)[..., jnp.newaxis]
+            x = vgp.marginal().sample(rng)[..., jnp.newaxis]
             vgps[layer] = vgp
 
             mf = lambda x_: x_[..., 0]  # identity mean_fn for later layers.
 
-        loglik = LikelihoodProvider(x, name='loglik')
+            # split the rng to sample the next layer
+            _, rng = random.split(rng, 2)
+
+        loglik = LikelihoodProvider(name='loglik')(x)
 
         return loglik, vgps
 
 
-def create_model(key, input_shape):
+# def create_model(key, input_shape):
+#
+#     def inducing_loc_init(key, shape):
+#         return jnp.linspace(-1.5, 1.5, FLAGS.num_inducing_points)[:, jnp.newaxis]
+#
+#     kwargs = {}
+#     for i in range(1, FLAGS.num_layers + 1):
+#         kwargs['kernel_fn_{}_kwargs'.format(i)] = {
+#             'amplitude_init': lambda key, shape: jnp.ones(shape),
+#             'length_scale_init': lambda key, shape: jnp.ones(shape)}
+#         kwargs['inducing_var_{}_kwargs'.format(i)] = {
+#             'fixed_locations': False,
+#             'whiten': FLAGS.whiten,
+#             'inducing_locations_init': inducing_loc_init}
+#
+#     with nn.stochastic(key):
+#         _, params = DeepGPModel.init_by_shape(
+#             key,
+#             [(input_shape, jnp.float64), ],
+#             **kwargs)
+#
+#         return nn.Model(model_def, params)
 
-    def inducing_loc_init(key, shape):
-        return jnp.linspace(-1.5, 1.5, FLAGS.num_inducing_points)[:, jnp.newaxis]
+
+def get_initial_params(rngs, inducing_locations_init):
 
     kwargs = {}
     for i in range(1, FLAGS.num_layers + 1):
@@ -121,18 +169,13 @@ def create_model(key, input_shape):
         kwargs['inducing_var_{}_kwargs'.format(i)] = {
             'fixed_locations': False,
             'whiten': FLAGS.whiten,
-            'inducing_locations_init': inducing_loc_init}
+            'inducing_locations_init': inducing_locations_init}
 
-    model_def = DeepGPModel.partial(**kwargs)
+    init_batch = jnp.ones((FLAGS.n_index_points, 1))
 
-    with nn.stochastic(key):
-        _, params = model_def.init_by_shape(
-            key,
-            [(input_shape, jnp.float64), ],
-            nn.make_rng(),
-            **kwargs)
+    initial_variables = DeepGPModel().init(rngs, init_batch)
 
-        return nn.Model(model_def, params)
+    return initial_variables["params"]
 
 
 def create_optimizer(model, learning_rate, beta1):
@@ -171,21 +214,31 @@ def train_epoch(optimizer, train_ds, epoch, sample_key):
 
 
 def train(train_ds):
-    rng = random.PRNGKey(0)
+    rng = random.PRNGKey(0)                 # initial seed for initialization RNG
+    layer_sample_rng = random.PRNGKey(123)  # inital seed for sampling layers
 
-    with nn.stochastic(rng):
-        model = create_model(rng, train_ds['index_points'].shape)
-        optimizer = create_optimizer(model, FLAGS.learning_rate, FLAGS.beta1)
+    rngs = {'params': rng, 'layer_sampling_rng': layer_sample_rng}
 
-        key = nn.make_rng()
+    # Define initializer for the inducing variables
+    def inducing_loc_init(key, shape):
+        return random.uniform(key, shape, minval=-3., maxval=3.)
 
-        for epoch in range(1, FLAGS.num_epochs + 1):
-            key = random.split(key, FLAGS.num_samples + 1)
-            key, sample_key = (key[0], key[1:])
-            optimizer, metrics = train_epoch(
-                optimizer, train_ds, epoch, sample_key)
+    # initalise the model parameters
+    params = get_initial_params(rngs, layer_sample_rng)
 
-    return optimizer
+    # with nn.stochastic(rng):
+    #     model = create_model(rng, train_ds['index_points'].shape)
+    #     optimizer = create_optimizer(model, FLAGS.learning_rate, FLAGS.beta1)
+    #
+    #     key = nn.make_rng()
+    #
+    #     for epoch in range(1, FLAGS.num_epochs + 1):
+    #         key = random.split(key, FLAGS.num_samples + 1)
+    #         key, sample_key = (key[0], key[1:])
+    #         optimizer, metrics = train_epoch(
+    #             optimizer, train_ds, epoch, sample_key)
+
+    #    return optimizer
 
 
 def step_fn(x):
